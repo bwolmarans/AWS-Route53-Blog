@@ -1,0 +1,190 @@
+<p>
+Either through human error or intentionally, configuration changes in the cloud may suddenly increase your attack surface. AWS Route 53 is an example of a service that needs to be continuously tracked for risky changes. As the first line of defense of our cloud, it is necessary to secure Amazon Route 53 and monitor risky configuration changes to avoid unwanted surprises.
+</p>
+<p>
+<a href="https://sysdig.com/wp-content/uploads/AWS-Route-53_blog-image.jpg"><img src="https://sysdig.com/wp-content/uploads/AWS-Route-53_blog-image.jpg" alt="Secure Route53 AWS" width="2501" height="1199" class="aligncenter size-full wp-image-51473 u-no-shadow" /></a>
+</p>
+<p>
+As you probably know, AWS Route 53 is of course a very popular DNS service offered by AWS, with <a rel="noopener nofollow noreferrer" target="_blank" href="https://trends.builtwith.com/websitelist/Amazon-Route-53">millions</a> of top-level domains.  For each domain, there are likely to be many sub-domains, such as www, finance, login, support, and so forth.
+</p>
+<p>
+While highly applicable for many DNS use cases for organizations of all sizes, Route 53 can be <a rel="noopener nofollow noreferrer" target="_blank" href="https://edransit.medium.com/a-dns-migration-from-f5-to-r53-dd7553a34997">a lot of work</a> and actually may potentially expose your cloud account to risk if not configured correctly.
+</p>
+<h2 id="risks">Amazon Route 53 risks</h2>
+
+
+<p>
+While some of us may often equate DNS attacks with <a rel="noopener nofollow noreferrer" target="_blank" href="https://aws.amazon.com/blogs/aws/reduce-ddos-risks-using-amazon-route-53-and-aws-shield/">volumetric denial-of-service attacks</a>, it doesn’t take an all-out attack to cause a big problem in your cloud.  AWS Shield and AWS Shield Advanced can help protect your Amazon Route 53 resources against DDOS attacks but not against risky changes to the underlying configuration.
+</p>
+<p>
+High level risks to our DNS posture on the Internet include registering new domains, deleting domains, and creating or deleting DNS records. We need to keep an eye on Route 53 changes in our account.
+</p>
+<p>
+AWS Route 53 real-world problems are many.  
+</p>
+<p>
+For example, a BGP hack <a rel="noopener nofollow noreferrer" target="_blank" href="https://www.techtarget.com/searchsecurity/news/252439945/BGP-routing-security-flaw-caused-Amazon-Route-53-incident">re-routed domains for AWS Route 53</a> for 2 hours resulting in $150,000 in cryptocurrency being stolen. And while the incident did not involve any compromise of Amazon Route 53 itself, this goes to show how carefully you need to track any domains that are being created in Route 53.</p>  
+<p>Imagine if this happened and you did not even know about some of your domains, because they were created by a different team in your AWS cloud?
+</p>
+<h3>A Frightening POC</h3>
+
+
+<p>
+In a scary Proof-of-Concept, a security researcher based in England named Patrik Hudak showed how scanning for registered domain names for S3 buckets could <a rel="noopener nofollow noreferrer" target="_blank" href="https://0xpatrik.com/subdomain-takeover-basics/">allow the buckets to be taken over</a>. </p>
+
+<p>This PoC shows with numeration techniques for enumeration, an attacker can discover orphaned Cloudfront distributions and DNS Records that are attempting to serve content from an S3 bucket that no longer exists.
+</p>
+<p>
+This shows the connection between the Route 53 DNS records and the rest of your AWS infrastructure. 
+</p>
+<h2 id="best">AWS Route 53 Security Best Practices</h2>
+
+
+<p>
+At a fundamental level, knowing which domains you have in Route 53 is top of the list.  As is knowing in real-time when somebody or something creates or deletes one of your domains. 
+</p>
+<p>
+AWS Maintains <a rel="noopener nofollow noreferrer" target="_blank" href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/best-practices-dns.html">a general best practice page</a> that outlines the basics for getting the best results, but in addition to that other best practices that can be found in the open standard <a rel="noopener nofollow noreferrer" target="_blank" href="https://www.cisecurity.org/benchmark/amazon_web_services">CIS Amazon Web Services</a> Three-tier Web Architecture Benchmark from the Center for Internet Security.
+</p>
+<p>
+The best practices include for example:
+</p>
+<ul>
+
+<li>Set TTLs appropriately to afford to wait for a change to take effect
+
+<li>Ensure Root Domain Alias Record Points to ELB
+
+<li>Ensure a DNS alias record for the root domain
+</li>
+</ul>
+<p>
+Sysdig has identified risky changes that need to be monitored as a best practice.
+</p>
+<p>
+These include:
+</p>
+<ul>
+
+<li>Associate VPC with Hosted Zone
+
+<li>Change Resource Record Sets
+
+<li>Register Domain
+</li>
+</ul>
+<h2 id="searching">Searching for Risks with CloudTrail</h2>
+
+
+<p>
+AWS wouldn’t leave us high and dry without a way to track our changes, and fortunately CloudTrail acts as essentially a giant audit log for everything. AWS <a rel="noopener nofollow noreferrer" target="_blank" href="https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html">CloudTrail</a> tracks all actions taken by your users, roles, and AWS services. Activity from both users and services is recorded as a CloudTrail event, which is basically an audit log entry.  
+</p>
+<p>
+Regardless whether the activity is made through the AWS console, the AWS CLI, or the AWS API, CloudTrail doesn’t miss a beat.
+</p>
+<p>
+<h3>Does this by itself solve our problem?<h3>
+</p>
+<p>
+CloudTrail is great! But CloudTrail is not designed to be a good judge of guilt vs innocence; CloudTrail can’t distinguish between a perfectly valid change in our account vs a change which might suddenly increase our attack surface. And even if it could, CloudTrail lacks an alerting and reporting mechanism.
+</p>
+<p>
+CloudTrail can be thought of as a really enormous haystack, and the risky changes in our AWS account can be thought of as really tiny little needles.
+</p>
+<p>
+Finding these needles manually (by hand!) is going to be painful and it doesn’t scale.
+</p>
+<p>
+Like all AWS services, when it comes to AWS Route 53, what you need is an automated solution for real-time alerting, reporting, a dashboard for visualization, role-based access control for your security team, as well a host of supporting <a rel="noopener nofollow noreferrer" target="_blank" href="https://docs.sysdig.com/en/docs/sysdig-secure/">professional features</a> to stay on top of risky events.
+</p>
+<p>
+And while rolling up your sleeves and building many of these missing pieces using the native tools AWS provides may sound like fun, in our testing we were surprised to find <a rel="noopener nofollow noreferrer" target="_blank" href="https://sysdig.com/blog/aws-rds-security-events-sysdig/#native">somewhat mixed results even after a lot of hard work</a>.  
+</p>
+<p>
+It would be great to have a team of cloud developers, but unfortunately not many of us have such luxuries at our disposal.  For the rest of us, we just want something that works out of the box. This is where Sysdig Secure comes in.
+</p>
+<h2 id="finding">Finding Risks with Sysdig Secure and CloudTrail</h2>
+
+
+<p>
+Sysdig watches CloudTrail like a security camera watching over your house, so the moment CloudTrail sees something, Sysdig sees it.
+</p>
+<p>
+But unlike CloudTrail, Sysdig knows right from wrong and will <a rel="noopener nofollow noreferrer" target="_blank" href="https://docs.sysdig.com/en/docs/administration/administration-settings/notifications-management/set-up-notification-channels/">Alert </a>us with the Who/What/When/Where/How so that we can take action, and best of all, Sysdig Secure works right out-of-the-box.
+</p>
+<p>
+Sysdig Secure includes these rules for the following risky AWS Route 53 events:
+</p>
+
+<table>
+    <tr style="text-align: center;background-color: #97D5F8">
+   <td>Sysdig Falco Rule
+   </td>
+   <td>Description
+   </td>
+   <td>Why it matters
+   </td>
+  </tr>
+  <tr>
+   <td>
+<h6>Associate VPC with Hosted Zone</h6>
+
+
+   </td>
+   <td>This rule detects the association of an Amazon VPC with a private hosted zone.  
+   </td>
+   <td>This allows IP addresses in your VPC to be resolved by DNS probing.
+   </td>
+  </tr>
+  <tr>
+   <td>
+<h6>Change Resource Record Sets</h6>
+
+
+   </td>
+   <td>Detects the creation, changes, or deletion of a resource record set, such as a name for a website
+   </td>
+   <td>New DNS entries need to be tracked.  DNS for your most important sites should not change or be deleted without you knowing.
+   </td>
+  </tr>
+  <tr>
+   <td>
+<h6>Register Domain</h6>
+
+
+   </td>
+   <td>Detects the registration of a new domain.
+   </td>
+   <td>Domains contain all your resource records and the registration of a domain should not happen without a valid business reason
+   </td>
+  </tr>
+</table>
+
+
+<p>
+Try out finding risky AWS Route 53 events first with CloudTrail, and then with Sysdig Secure and see the difference for yourself:
+</p>
+
+<div style="position:relative;padding-bottom:calc(45.16% + 36px)"><iframe src="https://app.storylane.io/demo/sr3j1kncx3rg?embed=true" allowfullscreen="" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none"></iframe></div>
+
+
+
+
+<h2 id="better">CloudTrail + Sysdig: Better Together</h2>
+
+
+<p>
+Somewhere in CloudTrail, events are hiding like buried treasure. But just like real treasure, this can attract attackers to your front door.  We have already published blogs showing examples of interesting CloudTrail events for <a rel="noopener nofollow noreferrer" target="_blank" href="https://sysdig.com/blog/aws-rds-security-events-sysdig/">AWS RDS</a> and <a rel="noopener nofollow noreferrer" target="_blank" href="https://sysdig.com/blog/aws-ec2-security-cloudtrail-sysdig/">AWS EC2</a>.
+</p>
+<p>
+Sysdig mines CloudTrail for this treasure and gives you the Who/What/When/Where/How that you need to secure your cloud account. 
+</p>
+<p>
+You get out-of-the-box rules to secure AWS Route 53, and you can easily <a rel="noopener nofollow noreferrer" target="_blank" href="https://sysdig.com/blog/getting-started-writing-falco-rules/">extend the ruleset</a> using the open source Falco syntax.
+</p>
+<p>
+Sysdig provides a single view of risk with deep visibility and rich context to find and fix issues faster.
+</p>
+<p>
+But don’t take our word for it - if you have a few minutes, get <a rel="noopener nofollow noreferrer" target="_blank" href="https://sysdig.com/company/start-free/">started</a> today at no cost and see the proof for yourself.
+</p>
